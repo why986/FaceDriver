@@ -18,11 +18,11 @@ sr_model = SRModel(gpu_ids='0,1') # assume using gpu 0,1
 
 # Read image from file
 # - Remember to convert image format from BGR to RGB!
-# - The model accepts numpy.ndarray (RGB format) as input, as well as output.
 img = cv2.imread('input.png')
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 # Run the model
+# - The model accepts numpy.ndarray (RGB format) as input, as well as output.
 sr_model.forward(img)
 
 # Write image to file for preview
