@@ -28,13 +28,4 @@ python test.py --dataroot ./datasets/face --direction BtoA --model pix2pix --nam
 
 
 
-#### 换脸 first order model
-
-在first-order-model内
-
-```
-python demo.py  --config config/vox-adv-256.yaml --driving_video 驱动视频的地址 --source_image 输入图片的地址 --checkpoint ../vox-adv-cpk.pth.tar --relative --adapt_scale
-```
-
-
 
