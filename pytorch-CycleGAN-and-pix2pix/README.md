@@ -2,6 +2,12 @@
 
 ###### 7.23
 
+#### 预训练模型
+
+ [新闻联播人脸预训练模型](https://cloud.tsinghua.edu.cn/d/f59f3ea1fe3e4dd892ce/)
+
+
+
 #### 关键点图片一个预处理
 
 在pytorch-CycleGan-and-pix2pix/datasets下，依据模型需要改一点图片要求
