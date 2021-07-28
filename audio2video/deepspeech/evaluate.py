@@ -15,7 +15,6 @@ import progressbar
 import shutil
 import tensorflow as tf
 import tensorflow.compat.v1 as tfv1
-tfv1.disable_v2_behavior()
 import time
 import pickle as pkl
 

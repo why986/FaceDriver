@@ -14,4 +14,13 @@ if os.path.isfile(args.image_path):
     re = np.concatenate([temp, image], 1)
     cv2.imwrite(args.result_path, re)
 else:
-    print("wrong path")
+    if os.path.isdir(args.image_path):
+        for root, _, files in os.walk(args.image_path):
+            for f in files:
+                file_name = os.path.join(root, f)
+                image = cv2.imread(file_name, 1)
+                temp = image.copy()
+                re = np.concatenate([temp, image], 1)
+                cv2.imwrite(os.path.join(args.result_path, f), re)
+    else:
+        print("wrong path")
