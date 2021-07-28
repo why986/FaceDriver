@@ -78,24 +78,29 @@
 # f = '1_0000.npy'
 # generate_landmarks_from_audio(f)
 
-import os, torch, cv2
+import os, cv2
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+import argparse
+parser = argparse.ArgumentParser('aduio2video')
+parser.add_argument('--tmp_dir', dest='tmp_dir', type=str, default='audio2landmarks_tmp')
+parser.add_argument('--file_name', dest='file_name', type=str, default='5_0000')
+parser.add_argument('--dataset_dir', dest='dataset_dir', type=str, default='data/')
+parser.add_argument('--landmarks_dir', dest='landmarks_dir', type=str, default='average_face/')
+parser.add_argument('--model_name', dest='model_name', type=str, default='multi_task_l2_1')
+args = parser.parse_args()
+
 from utils import *
 from API import audio_to_landmarks
 
-file_name = '5_0000'
-audio_path = f'/home/wanghy/audio2video/data/{file_name}.wav'
+
+audio_path = os.path.join(args.dataset_dir, f'{args.file_name}.wav')
 size = (255, 255)
 
-# from . import audio_to_features
-# prob_path, energy_path = audio_to_features(audio_path)
-# print(prob_path, energy_path)
-tmp_dir = 'audio2landmarks_tmp'
-landmarks_dir = '/home/wanghy/audio2video/data/face_npy'
-face_aver = get_average_face(landmarks_dir)
+face_aver = get_average_face(args.landmarks_dir)
 
-images = audio_to_landmarks(audio_path, size, face_aver[0], model_name='multi_task_l2_1', model_dir='')
+images = audio_to_landmarks(audio_path, size, face_aver[int(args.file_name[0])-1], model_name=args.model_name, model_dir='', tmp_dir=args.tmp_dir)
 
-output_path = os.path.join(tmp_dir, 'test_images')
+output_path = os.path.join(args.tmp_dir, args.file_name)
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 for i in range(images.shape[0]):

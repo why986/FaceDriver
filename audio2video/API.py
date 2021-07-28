@@ -27,7 +27,7 @@ def audio_to_landmarks(audio_path, video_size, base_landmarks, model_name, model
     file_name = os.path.basename(audio_path).split('.')[0]
     # convert audio into format .wav and downsample
     tmp_audio_path = os.path.join(tmp_dir, f'{file_name}.wav')
-    os.system(f'ffmpeg -i {audio_path} -ar 16000 {tmp_audio_path}')
+    os.system(f'ffmpeg -y -i {audio_path} -ar 16000 {tmp_audio_path}')
     # extract audio semantic features
     prob = get_prob(tmp_audio_path)
     # ectract audio energy features

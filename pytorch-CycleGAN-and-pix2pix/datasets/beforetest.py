@@ -21,6 +21,6 @@ else:
                 image = cv2.imread(file_name, 1)
                 temp = image.copy()
                 re = np.concatenate([temp, image], 1)
-                cv2.imwrite(file_name, re)
+                cv2.imwrite(os.path.join(args.result_path, f), re)
     else:
         print("wrong path")
