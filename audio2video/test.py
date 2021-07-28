@@ -78,11 +78,11 @@
 # f = '1_0000.npy'
 # generate_landmarks_from_audio(f)
 
-import os, torch
+import os, torch, cv2
 from utils import *
 from API import audio_to_landmarks
 
-file_name = '1_0000'
+file_name = '5_0000'
 audio_path = f'/home/wanghy/audio2video/data/{file_name}.wav'
 size = (255, 255)
 
@@ -93,5 +93,10 @@ tmp_dir = 'audio2landmarks_tmp'
 landmarks_dir = '/home/wanghy/audio2video/data/face_npy'
 face_aver = get_average_face(landmarks_dir)
 
-path = audio_to_landmarks(audio_path, size, face_aver[0], model_name='multi_task_l2_1', model_dir='')
-print(path)
+images = audio_to_landmarks(audio_path, size, face_aver[0], model_name='multi_task_l2_1', model_dir='')
+
+output_path = os.path.join(tmp_dir, 'test_images')
+if not os.path.exists(output_path):
+    os.makedirs(output_path)
+for i in range(images.shape[0]):
+    cv2.imwrite(os.path.join(output_path, f'{i}.jpg'), images[i])

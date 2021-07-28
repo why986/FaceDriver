@@ -1,10 +1,10 @@
 import os, math, cv2, librosa, torch
 import numpy as np
-from deepspeech import evaluate
+from deepspeech.evaluate import get_prob
 from utils import *
 from src.approaches.train_audio2fl import Audio_Landmarks_block
 
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
+# fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fps = 25
 colors = [(255, 144, 25), (50, 205, 50), (50, 205, 50), (208, 224, 63), (71, 99, 255), (71, 99, 255), (238, 130, 238), (238, 130, 238)]
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -20,7 +20,7 @@ def audio_to_landmarks(audio_path, video_size, base_landmarks, model_name, model
         tmp_dir -- the directory which the tempory audio files are saved in
         model_name -- the weights used
     Output:
-        the path of facial landmarks video
+        the sequence of landmarks image
     '''
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
@@ -29,7 +29,7 @@ def audio_to_landmarks(audio_path, video_size, base_landmarks, model_name, model
     tmp_audio_path = os.path.join(tmp_dir, f'{file_name}.wav')
     os.system(f'ffmpeg -i {audio_path} -ar 16000 {tmp_audio_path}')
     # extract audio semantic features
-    prob = evaluate.get_prob(tmp_audio_path)
+    prob = get_prob(tmp_audio_path)
     # ectract audio energy features
     audio, _ = librosa.load(tmp_audio_path, sr=None)
     audio_energy = librosa.feature.rms(y = audio, frame_length=512, hop_length=320, center=False)
@@ -48,15 +48,22 @@ def audio_to_landmarks(audio_path, video_size, base_landmarks, model_name, model
     landmarks = model.single_eval(audio_inputs, energy_inputs).cpu().detach().numpy().reshape(-1, 204)
     landmarks = np.concatenate([np.repeat(landmarks[0:1], 4, axis=0), landmarks], axis=0)
     # connect facial landmarks with different lines in each frame and concatenate these frames as a video
-    global fourcc, fps, colors
+    # global fourcc, fps, colors
+    global colors
     time = librosa.get_duration(filename=audio_path)
     length = min(int(math.ceil(time * fps)), landmarks.shape[0])
     landmarks = landmarks_restore(landmark=landmarks[:length], average=base_landmarks)
     landmarks[:, :, 0] += video_size[0]//2
     landmarks[:, :, 1] += video_size[1]//2
-    output_path = os.path.join(tmp_dir, f'{file_name}.avi')
-    out = cv2.VideoWriter(output_path, fourcc, fps, video_size)
+    output = []
     for i in range(length):
         img = landmarks_to_image([landmarks[i]], video_size, colors)
-        out.write(cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_RGB2BGR))
-    return output_path
+        img = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_RGB2BGR)
+        output.append(img)
+    return np.array(output)
+    # output_path = os.path.join(tmp_dir, f'{file_name}.avi')
+    # out = cv2.VideoWriter(output_path, fourcc, fps, video_size)
+    # for i in range(length):
+    #     img = landmarks_to_image([landmarks[i]], video_size, colors)
+    #     out.write(cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_RGB2BGR))
+    # return output_path
