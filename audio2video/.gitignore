@@ -1,5 +1,4 @@
 /data/
-!/data/face_npy/?.npy
 /audio2landmarks_tmp/
 /__pycache__/
 /multi_task_l2_1/
