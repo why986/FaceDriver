@@ -31,9 +31,9 @@ for root, _, files in os.walk(os.path.join(tmp_dir, args.file_name)):
 
 # pix2pix
 os.chdir('../pytorch-CycleGAN-and-pix2pix')
-tmp3_dir = f'results/face_pix2pix/{args.file_name}'
-epochs = 10
-os.system(f'python test.py --dataroot {tmp2_dir} --direction BtoA --model pix2pix --name face_pix2pix --epoch {epochs} --results_dir {tmp3_dir}')
+tmp3_dir = f'results/{args.file_name}'
+epochs = 'latest'
+os.system(f'python test.py --dataroot {tmp2_dir} --direction BtoA --model pix2pix --name face_pix2pix --epoch {epochs} --results_dir {tmp3_dir} --num_test 10000')
 
 # change face
 
@@ -44,21 +44,29 @@ if not os.path.exists(result_dir):
     os.mkdir(result_dir)
 if not os.path.exists(os.path.join(result_dir, 'image')):
     os.mkdir(os.path.join(result_dir, 'image'))
-output_path = os.path.join(result_dir, f'{args.file_name}.avi')
+if not os.path.exists(os.path.join(result_dir, 'image', args.file_name)):
+    os.mkdir(os.path.join(result_dir, 'image', args.file_name))
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fps = 25
-out = cv2.VideoWriter(output_path, fourcc, fps, (255, 255))
+output_path = os.path.join(result_dir, f'{args.file_name}_tmp.avi')
+result_path = os.path.join(result_dir, f'{args.file_name}.avi')
+out = cv2.VideoWriter(output_path, fourcc, fps, (1024, 1024))
 
 sr_model = SRModel(gpu_ids='0,1') # assume using gpu 0,1
+name_list = []
 for root, _, files in os.walk(os.path.join('pytorch-CycleGAN-and-pix2pix', tmp3_dir, f'face_pix2pix/test_{epochs}/images')):
     for f in files:
         if not 'fake' in f:
             continue
-        img = cv2.imread(os.path.join(root, f))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        sr_model.forward(img)
+        name_list.append(f)
 
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        cv2.imwrite(os.path.join(result_dir, 'image', f), img)
-        out.write(img)
-os.system(f'ffmpeg -y -i {output_path} -i audio2video/{os.path.join(args.dataset_dir,args.file_name)}.wav -c {output_path}')
+for i in range(len(name_list)):
+    root = os.path.join('pytorch-CycleGAN-and-pix2pix', tmp3_dir, f'face_pix2pix/test_{epochs}/images')
+    f = f'{i}_fake_B.png'
+    img = cv2.imread(os.path.join(root, f))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = sr_model.forward(img)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(os.path.join(result_dir, 'image', args.file_name, f), img)
+    out.write(img)
+os.system(f'ffmpeg -y -i {output_path} -i audio2video/{os.path.join(args.dataset_dir, args.file_name)}.wav -vcodec copy -acodec copy {result_path}')
